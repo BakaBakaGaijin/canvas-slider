@@ -114,6 +114,11 @@ body {
     transition: translate 1s ease, opacity 1s ease;
 }
 
+.text.out {
+    translate: -25px;
+    opacity: 0;
+}
+
 .title {
     color: var(--white);
     font-weight: 700;
