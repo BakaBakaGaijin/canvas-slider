@@ -1,0 +1,37 @@
+[
+    {
+        "title": "ASTON MARTIN",
+        "description": "Aston Martin, renowned for its unparalleled craftsmanship and high-performance vehicles, has long been a symbol of elegance and power on the roads. Immerse yourself in the sleek lines and aerodynamic prowess of Aston Martin's signature vehicles, as they seamlessly glide across the virtual terrains of PUBG.",
+        "main": "src/images/main1.png",
+        "parallax": "src/images/parallax1.png",
+        "clip": null
+    },
+    {
+        "title": "CLAN SYSTEM",
+        "description": "Experience the exciting integration of Clans in PUBG: BATTLEGROUNDS! With Clans, feel a fresh and engaging layer to the gameplay experience with a new progression system: Clan levels. Collaborating with your Clan members offers a range of benefits and rewards, and furthermore, you'll have the ability to access your own or other players' Clan Tags, and more!",
+        "main": "src/images/main2.jpeg",
+        "parallax": "src/images/parallax2.png",
+        "clip": "bottom"
+    },
+    {
+        "title": "DESTON: CONQUER THE HEIGHTS",
+        "description": "Experience the benefits of vertical gameplay, new mechanics and vehicles on the updated Deston map. Quickly climb skyscrapers and cell towers with ascenders and take a look around from a new perspective, traverse long distances on water and land in an airbot - gain tactical advantages and take your TOP-1!",
+        "main": "src/images/main3.jpeg",
+        "parallax": "src/images/parallax3.png",
+        "clip": "top"
+    },
+    {
+        "title": "VIKENDI REBORN",
+        "description": "Meet the improved balance and dynamics on the Vikendi map. Explore the enlarged 8x8 km play area: check out the secret room, enjoy the Northern Lights, and ride the cable car. But beware of bears and snowstorms — they can drastically change all your plans. We also brought back a snowmobile - take a ride and enjoy the scenery.",
+        "main": "src/images/main4.jpeg",
+        "parallax": "src/images/parallax4.png",
+        "clip": "bottomRight"
+    },
+    {
+        "title": "TACTICAL GEAR",
+        "description": "Tag your enemies through the gunner's sight, become a squad medic with a med kit, and carry 4 Panzerfausts in a tactical kit! This is just a small part of what tactical gear opens up for you in PUBG - enhance your squad or use it solo.",
+        "main": "src/images/main5.jpeg",
+        "parallax": "src/images/parallax5.png",
+        "clip": "bottomRight"
+    }
+]

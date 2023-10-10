@@ -1,0 +1,12 @@
+<svg class="pentagon" viewBox="0 0 964.5 460" xmlns="http://www.w3.org/2000/svg" fill="tomato">
+    <path 
+        d="M 41.5, 1.5 
+            H 962.5 
+            V 419.5 
+            L 922.5, 459.5 
+            H 1.5 
+            V 41.5 
+        Z" 
+        stroke="currentColor">
+    </path>
+</svg>
