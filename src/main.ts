@@ -5,6 +5,7 @@ import { Slide } from "./types";
 
 import "./style.css";
 
+const text = document.querySelector(".text");
 const title = document.querySelector(".title");
 const description = document.querySelector(".description");
 const prevBtn = document.querySelector(".prev");
@@ -29,6 +30,7 @@ const draw = () => {
     secondCanvas.width = 967;
     secondCanvas.height = 621;
     const secondCtx = secondCanvas.getContext("2d");
+    text?.classList.remove("out");
 
     if (title) {
         title.textContent = slides[currentIndex].title;
@@ -108,6 +110,17 @@ const draw = () => {
     parallax1.onload = loadHandler;
 };
 
+let timerId: number | null = null;
+
+const slide = () => {
+    if (timerId) {
+        clearTimeout(timerId);
+    }
+
+    text?.classList.add("out");
+    timerId = setTimeout(draw, 1000);
+};
+
 const handleNext = () => {
     if (currentIndex === slides.length - 1) {
         currentIndex = 0;
@@ -115,7 +128,7 @@ const handleNext = () => {
         currentIndex++;
     }
 
-    draw();
+    slide();
 };
 
 const handlePrev = () => {
@@ -125,7 +138,7 @@ const handlePrev = () => {
         currentIndex--;
     }
 
-    draw();
+    slide();
 };
 
 nextBtn?.addEventListener("click", handleNext);
@@ -134,14 +147,15 @@ prevBtn?.addEventListener("click", handlePrev);
 bottomBtns.forEach((btn, i) => {
     btn.addEventListener("click", () => {
         currentIndex = i;
-        draw();
+
+        slide();
     });
 });
 
-draw();
+slide();
 
 const step = () => {
-    setTimeout(() => {
+    timerId = setTimeout(() => {
         handleNext();
         step();
     }, 5000);
