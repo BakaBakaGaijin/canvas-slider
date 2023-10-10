@@ -139,3 +139,12 @@ bottomBtns.forEach((btn, i) => {
 });
 
 draw();
+
+const step = () => {
+    setTimeout(() => {
+        handleNext();
+        step();
+    }, 5000);
+};
+
+step();
