@@ -2,6 +2,8 @@ import data from "./data/data.json";
 import smokeSrc from "./images/smoke.png";
 import pentagonSrc from "./images/pentagon.svg";
 import { Slide } from "./types";
+import { FrameHandler } from "./FrameHandler";
+import { GA_STEP, OFFSET_MAX, OFFSET_STEP } from "./constants";
 
 import "./style.css";
 
@@ -48,6 +50,44 @@ parallaxCanvas.height = 621;
 const parallaxCtx = parallaxCanvas.getContext("2d");
 
 let currentIndex = 0;
+let offset = OFFSET_MAX;
+let ga = 0.0;
+let timerId: number | null = null;
+
+const drawCanvas = (offset: number, ga: number) => {
+    if (mainCtx && mainCanvas) {
+        mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+        mainCtx.globalAlpha = ga;
+        mainCtx.drawImage(pentagon, -281, 80, 1160, 458);
+        mainCtx.globalCompositeOperation = "source-in";
+        mainCtx.drawImage(backgroundCanvas, offset, 0);
+        mainCtx.globalCompositeOperation = "source-over";
+        mainCtx.drawImage(parallaxCanvas, offset, 0);
+    }
+};
+
+const fadeIn = (delta: number) => {
+    const offsetDelta = OFFSET_STEP * delta;
+    const gaDelta = GA_STEP * delta;
+    drawCanvas(offset, ga);
+    const nextOffset = offset - offsetDelta;
+    const nextGA = ga + gaDelta;
+    offset = nextOffset < 0 ? 0 : nextOffset;
+    ga = nextGA < 0 ? 0 : nextGA > 1 ? 1 : nextGA;
+};
+
+const fadeOut = (delta: number) => {
+    const offsetDelta = OFFSET_STEP * delta;
+    const gaDelta = GA_STEP * delta;
+    drawCanvas(offset, ga);
+    const nextOffset = offset + offsetDelta;
+    const nextGA = ga - gaDelta;
+    offset = nextOffset > OFFSET_MAX ? OFFSET_MAX : nextOffset;
+    ga = nextGA < 0 ? 0 : nextGA > 1 ? 1 : nextGA;
+};
+
+const fadeInFrameHandler = new FrameHandler(fadeIn);
+const fadeOutFrameHandler = new FrameHandler(fadeOut);
 
 const draw = () => {
     text?.classList.remove("out");
@@ -68,9 +108,6 @@ const draw = () => {
 
     const loadHandler = () => {
         count++;
-        let delta = 64;
-        let ga = 0.0;
-        let time = 64;
 
         if (
             count === 2 &&
@@ -97,7 +134,7 @@ const draw = () => {
             backgroundCtx.drawImage(image, 0, 0);
             backgroundCtx.globalCompositeOperation = "source-over";
 
-            mainCtx.drawImage(backgroundCanvas, delta, 0);
+            mainCtx.drawImage(backgroundCanvas, offset, 0);
             mainCtx.globalCompositeOperation = "source-over";
 
             switch (slides[currentIndex].clip) {
@@ -135,30 +172,13 @@ const draw = () => {
             parallaxCtx.drawImage(parallax, 0, 0);
             parallaxCtx.globalCompositeOperation = "source-over";
 
-            mainCtx.drawImage(parallaxCanvas, delta, 0);
+            mainCtx.drawImage(parallaxCanvas, offset, 0);
 
-            const fadeIn = () => {
-                if (time < 0) return;
+            fadeInFrameHandler.start();
 
-                setTimeout(() => {
-                    if (mainCtx) {
-                        mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-                        mainCtx.globalAlpha = ga;
-                        mainCtx.drawImage(pentagon, -281, 80, 1160, 458);
-                        mainCtx.globalCompositeOperation = "source-in";
-                        mainCtx.drawImage(backgroundCanvas, delta, 0);
-                        mainCtx.globalCompositeOperation = "source-over";
-                        mainCtx.drawImage(parallaxCanvas, delta, 0);
-                        time -= 1;
-                        delta -= 1;
-                        ga += 0.016;
-
-                        fadeIn();
-                    }
-                }, 16);
-            };
-
-            fadeIn();
+            setTimeout(() => {
+                fadeInFrameHandler.stop();
+            }, 1000);
         }
     };
 
@@ -171,47 +191,6 @@ const draw = () => {
     parallax.onload = loadHandler;
 };
 
-let timerId: number | null = null;
-let time = 0;
-let delta = 10;
-let ga = 1.0;
-
-const fadeOut = () => {
-    if (time > 63) return;
-
-    setTimeout(() => {
-        if (mainCtx && mainCanvas && isPentagonLoaded) {
-            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-            mainCtx.globalAlpha = ga;
-            mainCtx.drawImage(pentagon, -281, 80, 1160, 458);
-            mainCtx.globalCompositeOperation = "source-in";
-            mainCtx.drawImage(backgroundCanvas, delta, 0);
-            mainCtx.globalCompositeOperation = "source-over";
-            mainCtx.drawImage(parallaxCanvas, delta, 0);
-            time += 1;
-            delta += 1;
-            ga -= 0.016;
-
-            fadeOut();
-        }
-    }, 16);
-};
-
-const slide = () => {
-    time = 0;
-    delta = 10;
-    ga = 1.0;
-
-    if (timerId) {
-        clearTimeout(timerId);
-    }
-
-    text?.classList.add("out");
-    fadeOut();
-
-    timerId = setTimeout(draw, 1000);
-};
-
 const handleNext = () => {
     if (currentIndex === slides.length - 1) {
         currentIndex = 0;
@@ -219,7 +198,13 @@ const handleNext = () => {
         currentIndex++;
     }
 
-    slide();
+    text?.classList.add("out");
+    fadeOutFrameHandler.start();
+
+    setTimeout(() => {
+        fadeOutFrameHandler.stop();
+        draw();
+    }, 1000);
 };
 
 const handlePrev = () => {
@@ -229,7 +214,13 @@ const handlePrev = () => {
         currentIndex--;
     }
 
-    slide();
+    text?.classList.add("out");
+    fadeOutFrameHandler.start();
+
+    setTimeout(() => {
+        fadeOutFrameHandler.stop();
+        draw();
+    }, 1000);
 };
 
 nextBtn?.addEventListener("click", handleNext);
@@ -239,11 +230,17 @@ bottomBtns.forEach((btn, i) => {
     btn.addEventListener("click", () => {
         currentIndex = i;
 
-        slide();
+        text?.classList.add("out");
+        fadeOutFrameHandler.start();
+
+        setTimeout(() => {
+            fadeOutFrameHandler.stop();
+            draw();
+        }, 1000);
     });
 });
 
-slide();
+draw();
 
 const step = () => {
     timerId = setTimeout(() => {
