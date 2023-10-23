@@ -166,6 +166,10 @@ body {
     border-left: 1px solid var(--gray);
 }
 
+.slider-bottom-buttons__button:last-child:after {
+    border: none;
+}
+
 .slider-bottom-buttons__button.active,
 .slider-bottom-buttons__button:hover {
     color: var(--primary);
