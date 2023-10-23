@@ -4,6 +4,7 @@ import pentagonSrc from "./images/pentagon.svg";
 import { Slide } from "./types";
 import { FrameHandler } from "./FrameHandler";
 import { GA_STEP, OFFSET_MAX, OFFSET_STEP } from "./constants";
+import { clipParallaxImage } from "./helpers/clipParallaxImage";
 
 import "./style.css";
 
@@ -52,18 +53,28 @@ const parallaxCtx = parallaxCanvas.getContext("2d");
 let currentIndex = 0;
 let offset = OFFSET_MAX;
 let ga = 0.0;
-let timerId: number | null = null;
 
 const drawCanvas = (offset: number, ga: number) => {
-    if (mainCtx && mainCanvas) {
-        mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-        mainCtx.globalAlpha = ga;
-        mainCtx.drawImage(pentagon, -281, 80, 1160, 458);
-        mainCtx.globalCompositeOperation = "source-in";
-        mainCtx.drawImage(backgroundCanvas, offset, 0);
-        mainCtx.globalCompositeOperation = "source-over";
-        mainCtx.drawImage(parallaxCanvas, offset, 0);
-    }
+    const parallax = new Image();
+    parallax.src = slides[currentIndex].parallax;
+    parallax.onload = () => {
+        if (mainCtx && mainCanvas && parallaxCtx) {
+            mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            mainCtx.globalAlpha = ga;
+            mainCtx.drawImage(pentagon, -281, 80, 1160, 458);
+            mainCtx.globalCompositeOperation = "source-in";
+            mainCtx.drawImage(backgroundCanvas, offset, 0);
+            mainCtx.globalCompositeOperation = "source-over";
+
+            parallaxCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+            clipParallaxImage(parallaxCtx, slides[currentIndex].clip);
+            parallaxCtx.globalCompositeOperation = "source-in";
+            parallaxCtx.drawImage(parallax, offset, 0);
+            parallaxCtx.globalCompositeOperation = "source-over";
+
+            mainCtx.drawImage(parallaxCanvas, 0, 0);
+        }
+    };
 };
 
 const fadeIn = (delta: number) => {
@@ -137,42 +148,12 @@ const draw = () => {
             mainCtx.drawImage(backgroundCanvas, offset, 0);
             mainCtx.globalCompositeOperation = "source-over";
 
-            switch (slides[currentIndex].clip) {
-                case "bottom":
-                    parallaxCtx.fillStyle = "rgba(0, 0, 255, 1)";
-                    parallaxCtx.fillRect(0, 0, 1160, 540);
-                    break;
-                case "top":
-                    parallaxCtx.fillStyle = "rgba(0, 0, 255, 1)";
-                    parallaxCtx.fillRect(0, 79, 1160, 540);
-                    break;
-                case "bottomRight":
-                    parallaxCtx.beginPath();
-                    parallaxCtx.moveTo(0, 0);
-                    parallaxCtx.lineTo(878, 0);
-                    parallaxCtx.lineTo(878, 500);
-                    parallaxCtx.lineTo(838, 540);
-                    parallaxCtx.lineTo(0, 540);
-                    parallaxCtx.closePath();
-                    parallaxCtx.fill();
-                    break;
-                default:
-                    parallaxCtx.beginPath();
-                    parallaxCtx.moveTo(0, 0);
-                    parallaxCtx.lineTo(878, 0);
-                    parallaxCtx.lineTo(878, 500);
-                    parallaxCtx.lineTo(838, 540);
-                    parallaxCtx.lineTo(0, 540);
-                    parallaxCtx.closePath();
-                    parallaxCtx.fill();
-                    break;
-            }
-
+            clipParallaxImage(parallaxCtx, slides[currentIndex].clip);
             parallaxCtx.globalCompositeOperation = "source-in";
-            parallaxCtx.drawImage(parallax, 0, 0);
+            parallaxCtx.drawImage(parallax, offset, 0);
             parallaxCtx.globalCompositeOperation = "source-over";
 
-            mainCtx.drawImage(parallaxCanvas, offset, 0);
+            mainCtx.drawImage(parallaxCanvas, 0, 0);
 
             fadeInFrameHandler.start();
 
@@ -192,33 +173,35 @@ const draw = () => {
 };
 
 const handleNext = () => {
-    if (currentIndex === slides.length - 1) {
-        currentIndex = 0;
-    } else {
-        currentIndex++;
-    }
-
     text?.classList.add("out");
     fadeOutFrameHandler.start();
 
     setTimeout(() => {
         fadeOutFrameHandler.stop();
+
+        if (currentIndex === slides.length - 1) {
+            currentIndex = 0;
+        } else {
+            currentIndex++;
+        }
+
         draw();
     }, 1000);
 };
 
 const handlePrev = () => {
-    if (currentIndex === 0) {
-        currentIndex = slides.length - 1;
-    } else {
-        currentIndex--;
-    }
-
     text?.classList.add("out");
     fadeOutFrameHandler.start();
 
     setTimeout(() => {
         fadeOutFrameHandler.stop();
+
+        if (currentIndex === 0) {
+            currentIndex = slides.length - 1;
+        } else {
+            currentIndex--;
+        }
+
         draw();
     }, 1000);
 };
@@ -228,13 +211,14 @@ prevBtn?.addEventListener("click", handlePrev);
 
 bottomBtns.forEach((btn, i) => {
     btn.addEventListener("click", () => {
-        currentIndex = i;
-
         text?.classList.add("out");
         fadeOutFrameHandler.start();
 
         setTimeout(() => {
             fadeOutFrameHandler.stop();
+
+            currentIndex = i;
+
             draw();
         }, 1000);
     });
@@ -243,7 +227,7 @@ bottomBtns.forEach((btn, i) => {
 draw();
 
 const step = () => {
-    timerId = setTimeout(() => {
+    setTimeout(() => {
         handleNext();
         step();
     }, 5000);

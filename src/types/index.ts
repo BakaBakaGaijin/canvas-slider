@@ -1,4 +1,4 @@
-type Clip = "bottom" | "top" | "bottomRight" | null;
+export type Clip = "bottom" | "top" | "bottomRight" | null;
 
 export interface Slide {
     title: string;
